@@ -1,9 +1,9 @@
 # Furnitech Full-Stack Project
 
-A complete web application for Furnitech, a smart height-adjustable furniture company. The system includes:
+A complete web application for Furnitech, a smart furniture company. The system includes:
 
-- `admin-portal/`: Admin app for managing products.
-- `client-storefront/`: Client app for browsing and purchasing products.
+- `admin/`: Admin app for managing products.
+- `client/`: Client app for browsing and purchasing products.
 
 ---
 ## 📸 Screenshots
