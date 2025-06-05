@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Cart</title>
+  <link rel="stylesheet" href="/css/style.css"> <!-- Optional CSS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h1>Your Shopping Cart</h1>
+
+<table id="cart-table" border="1" cellpadding="10">
+  <thead>
+  <tr>
+    <th>Product</th>
+    <th>Price</th>
+    <th>Qty</th>
+    <th>Total</th>
+    <th>Action</th>
+  </tr>
+  </thead>
+  <tbody>
+  <!-- Cart items will be injected here -->
+  </tbody>
+  <tfoot>
+  <tr>
+    <td colspan="3"><strong>Grand Total</strong></td>
+    <td id="grand-total">$0.00</td>
+    <td></td>
+  </tr>
+  </tfoot>
+</table>
+
+<p id="empty-message" style="display: none;">Your cart is empty.</p>
+
+<script>
+  $(document).ready(function () {
+      function loadCart() {
+          $.get("/api/cart", function (data) {
+              const $tbody = $("#cart-table tbody");
+              $tbody.empty();
+
+              if (data.length === 0) {
+                  $("#cart-table").hide();
+                  $("#empty-message").show();
+                  return;
+              }
+
+              $("#cart-table").show();
+              $("#empty-message").hide();
+
+              let grandTotal = 0;
+
+              data.forEach(item => {
+                  const total = item.product.price * item.quantity;
+                  grandTotal += total;
+
+                  $tbody.append(`
+                      <tr>
+                          <td>${item.product.name}</td>
+                          <td>$${item.product.price.toFixed(2)}</td>
+                          <td>${item.quantity}</td>
+                          <td>$${total.toFixed(2)}</td>
+                          <td>
+                              <button class="remove-btn" data-id="${item.product.id}">Remove</button>
+                          </td>
+                      </tr>
+                  `);
+              });
+
+              $("#grand-total").text(`$${grandTotal.toFixed(2)}`);
+          });
+      }
+
+      $(document).on("click", ".remove-btn", function () {
+          const productId = $(this).data("id");
+          $.post(`/cart/remove/${productId}`, function () {
+              loadCart();
+          });
+      });
+
+      loadCart();
+  });
+</script>
+</body>
+</html>
