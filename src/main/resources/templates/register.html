@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin Portal - Authentication</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+        .auth-container {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          border-radius: 20px;
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+          padding: 40px;
+          width: 100%;
+          max-width: 450px;
+          position: relative;
+          overflow: hidden;
+        }
+        .auth-container::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        .logo {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .logo h1 {
+          color: #333;
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin-bottom: 5px;
+        }
+        .logo p {
+          color: #666;
+          font-size: 1rem;
+        }
+        .auth-tabs {
+          display: flex;
+          margin-bottom: 30px;
+          background: #f8f9fa;
+          border-radius: 10px;
+          padding: 5px;
+        }
+        .tab-button {
+          flex: 1;
+          padding: 12px;
+          background: none;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          color: #666;
+        }
+        .tab-button.active {
+          background: white;
+          color: #667eea;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+          display: block;
+          margin-bottom: 8px;
+          color: #333;
+          font-weight: 600;
+          font-size: 0.9rem;
+        }
+        .form-group input {
+          width: 100%;
+          padding: 15px;
+          border: 2px solid #e1e5e9;
+          border-radius: 10px;
+          font-size: 1rem;
+          transition: all 0.3s ease;
+          background: #f8f9fa;
+        }
+        .form-group input:focus {
+          outline: none;
+          border-color: #667eea;
+          background: white;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .password-field {
+          position: relative;
+        }
+        .password-toggle {
+          position: absolute;
+          right: 15px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #666;
+          font-size: 1.1rem;
+        }
+        .submit-btn {
+          width: 100%;
+          padding: 15px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          border: none;
+          border-radius: 10px;
+          font-size: 1.1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .submit-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        .submit-btn:active { transform: translateY(0); }
+        .forgot-password {
+          text-align: center;
+          margin-top: 20px;
+        }
+        .forgot-password a {
+          color: #667eea;
+          text-decoration: none;
+          font-size: 0.9rem;
+          transition: color 0.3s ease;
+        }
+        .forgot-password a:hover { color: #764ba2; }
+        .form-footer {
+          text-align: center;
+          margin-top: 25px;
+          padding-top: 20px;
+          border-top: 1px solid #e1e5e9;
+          color: #666;
+          font-size: 0.9rem;
+        }
+        .error-message,
+        .success-message {
+          padding: 10px;
+          border-radius: 8px;
+          margin-bottom: 20px;
+          text-align: center;
+          font-size: 0.9rem;
+          display: none;
+        }
+        .error-message {
+          background: #fee;
+          color: #c33;
+        }
+        .success-message {
+          background: #efe;
+          color: #3c3;
+        }
+        @media (max-width: 480px) {
+          .auth-container {
+            padding: 30px 20px;
+            margin: 10px;
+          }
+          .logo h1 { font-size: 2rem; }
+        }
+        .loading {
+          display: none;
+          width: 20px;
+          height: 20px;
+          border: 2px solid #ffffff;
+          border-top: 2px solid transparent;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-right: 10px;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="auth-container">
+    <div class="logo">
+        <h1>AdminHub</h1>
+        <p>Product Management Portal</p>
+    </div>
+
+    <div class="auth-tabs">
+        <button class="tab-button active" onclick="switchTab('login', event)">Login</button>
+        <button class="tab-button" onclick="switchTab('register', event)">Register</button>
+    </div>
+
+    <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
+
+    <!-- Login Form -->
+    <form id="login-form" class="auth-form active" onsubmit="handleLogin(event)">
+        <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" name="email" required />
+        </div>
+        <div class="form-group">
+            <label for="login-password">Password</label>
+            <div class="password-field">
+                <input type="password" id="login-password" name="password" required />
+                <button type="button" class="password-toggle" onclick="togglePassword('login-password')">👁️</button>
+            </div>
+        </div>
+        <button type="submit" class="submit-btn">
+            <div class="loading" id="login-loading"></div>
+            Sign In
+        </button>
+        <div class="forgot-password">
+            <a href="#">Forgot your password?</a>
+        </div>
+    </form>
+
+    <!-- Register Form -->
+    <form id="register-form" class="auth-form" onsubmit="handleRegister(event)">
+        <div class="form-group">
+            <label for="register-name">Full Name</label>
+            <input type="text" id="register-name" name="fullName" required />
+        </div>
+        <div class="form-group">
+            <label for="register-email">Email Address</label>
+            <input type="email" id="register-email" name="email" required />
+        </div>
+        <div class="form-group">
+            <label for="register-password">Password</label>
+            <div class="password-field">
+                <input type="password" id="register-password" name="password" required minlength="8" />
+                <button type="button" class="password-toggle" onclick="togglePassword('register-password')">👁️</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="confirm-password">Confirm Password</label>
+            <div class="password-field">
+                <input type="password" id="confirm-password" name="confirmPassword" required />
+                <button type="button" class="password-toggle" onclick="togglePassword('confirm-password')">👁️</button>
+            </div>
+        </div>
+        <button type="submit" class="submit-btn">
+            <div class="loading" id="register-loading"></div>
+            Create Account
+        </button>
+    </form>
+
+    <div class="form-footer">
+        <p>Secure admin access for product management</p>
+    </div>
+</div>
+
+<script>
+    function switchTab(tab, event) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+      document.getElementById(tab + '-form').classList.add('active');
+      clearMessages();
+    }
+
+    function togglePassword(fieldId) {
+      const field = document.getElementById(fieldId);
+      const button = field.nextElementSibling;
+      if (field.type === 'password') {
+        field.type = 'text';
+        button.textContent = '🙈';
+      } else {
+        field.type = 'password';
+        button.textContent = '👁️';
+      }
+    }
+
+    function showMessage(message, type) {
+      clearMessages();
+      const messageEl = document.getElementById(type + '-message');
+      messageEl.textContent = message;
+      messageEl.style.display = 'block';
+    }
+
+    function clearMessages() {
+      document.getElementById('error-message').style.display = 'none';
+      document.getElementById('success-message').style.display = 'none';
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const loading = document.getElementById('login-loading');
+      const button = event.target.querySelector('.submit-btn');
+
+      loading.style.display = 'inline-block';
+      button.disabled = true;
+
+      const formData = new FormData(event.target);
+      const loginData = {
+        email: formData.get('email'),
+        password: formData.get('password')
+      };
+
+      fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginData)
+      })
+      .then(response => {
+        loading.style.display = 'none';
+        button.disabled = false;
+        if (response.ok) {
+          window.location.href = '/home.html';
+        } else {
+          showMessage('Invalid email or password. Please try again.', 'error');
+        }
+      })
+      .catch(() => {
+        loading.style.display = 'none';
+        button.disabled = false;
+        showMessage('An error occurred. Please try again later.', 'error');
+      });
+    }
+
+    function handleRegister(event) {
+      event.preventDefault();
+      const loading = document.getElementById('register-loading');
+      const button = event.target.querySelector('.submit-btn');
+
+      loading.style.display = 'inline-block';
+      button.disabled = true;
+
+      const formData = new FormData(event.target);
+      const password = formData.get('password');
+      const confirmPassword = formData.get('confirmPassword');
+
+      if (password !== confirmPassword) {
+        loading.style.display = 'none';
+        button.disabled = false;
+        showMessage('Passwords do not match.', 'error');
+        return;
+      }
+
+      const registerData = {
+        fullName: formData.get('fullName'),
+        email: formData.get('email'),
+        password: password
+      };
+
+      fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerData)
+      })
+      .then(response => {
+        loading.style.display = 'none';
+        button.disabled = false;
+        if (response.ok) {
+          showMessage('Registration successful! Please login.', 'success');
+          switchTab('login', { target: document.querySelector('.tab-button') });
+        } else {
+          showMessage('Registration failed. Try again.', 'error');
+        }
+      })
+      .catch(() => {
+        loading.style.display = 'none';
+        button.disabled = false;
+        showMessage('An error occurred. Please try again later.', 'error');
+      });
+    }
+</script>
+</body>
+</html>

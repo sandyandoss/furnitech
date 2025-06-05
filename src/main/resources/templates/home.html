@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Dashboard - Product Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .form-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 2rem;
+        }
+
+        .form-card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .table-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .table-filters {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .search-box {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modern-table th {
+            background: #f7fafc;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modern-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #2d3748;
+        }
+
+        .modern-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .modern-table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .product-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .product-description {
+            color: #718096;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .product-price {
+            font-weight: 700;
+            color: #38a169;
+            font-size: 1.1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-edit {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #3182ce;
+        }
+
+        .btn-delete {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #e53e3e;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #718096;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-container {
+                padding: 1rem;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .table-filters {
+                flex-direction: column;
+            }
+        }
+
+        .floating-action {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-action:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: #48bb78;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="header">
+        <h1><i class="fas fa-boxes"></i> Product Management</h1>
+        <p>Manage your product inventory with ease and efficiency</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-box"></i>
+            </div>
+            <div class="stat-number" id="totalProducts">0</div>
+            <div class="stat-label">Total Products</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-number" id="avgPrice">$0.00</div>
+            <div class="stat-label">Average Price</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-number" id="totalValue">$0.00</div>
+            <div class="stat-label">Total Inventory Value</div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+        <!-- Add Product Form -->
+        <div class="form-card">
+            <h2><i class="fas fa-plus-circle"></i> Add New Product</h2>
+            <form th:action="@{/products}" method="post" id="productForm">
+                <div class="form-group">
+                    <label for="name">Product Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required placeholder="Enter product name">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" class="form-control" required placeholder="Describe your product..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price ($)</label>
+                    <input type="number" step="0.01" id="price" name="price" class="form-control" required placeholder="0.00">
+                </div>
+
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add Product
+                </button>
+            </form>
+        </div>
+
+        <!-- Product List -->
+        <div class="table-card">
+            <div class="table-header">
+                <h2><i class="fas fa-list"></i> Product Inventory</h2>
+                <div class="table-filters">
+                    <input type="text" class="search-box" placeholder="Search products..." id="searchInput">
+                    <select class="form-control" style="max-width: 200px;" id="sortSelect">
+                        <option value="name">Sort by Name</option>
+                        <option value="price">Sort by Price</option>
+                        <option value="description">Sort by Description</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="modern-table" id="productsTable">
+                    <thead>
+                    <tr>
+                        <th>Product Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="product : ${products}">
+                        <td class="product-name" th:text="${product.name}">Product Name</td>
+                        <td class="product-description" th:text="${product.description}" th:title="${product.description}">Product Description</td>
+                        <td class="product-price">$<span th:text="${product.price}">0.00</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-sm btn-edit" onclick="editProduct(this)">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-sm btn-delete" onclick="deleteProduct(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <i class="fas fa-box-open"></i>
+                    <h3>No products found</h3>
+                    <p>Start by adding your first product using the form on the left.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="floating-action" onclick="scrollToForm()">
+    <i class="fas fa-plus"></i>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification">
+    <i class="fas fa-check-circle"></i>
+    <span id="notificationText">Product added successfully!</span>
+</div>
+
+<script>
+    // Calculate and display statistics
+    function updateStats() {
+        const rows = document.querySelectorAll('#productsTable tbody tr');
+        const totalProducts = rows.length;
+
+        let totalValue = 0;
+        rows.forEach(row => {
+            const priceText = row.querySelector('.product-price span').textContent;
+            const price = parseFloat(priceText) || 0;
+            totalValue += price;
+        });
+
+        const avgPrice = totalProducts > 0 ? totalValue / totalProducts : 0;
+
+        document.getElementById('totalProducts').textContent = totalProducts;
+        document.getElementById('avgPrice').textContent = '$' + avgPrice.toFixed(2);
+        document.getElementById('totalValue').textContent = '$' + totalValue.toFixed(2);
+
+        // Show/hide empty state
+        const emptyState = document.getElementById('emptyState');
+        if (totalProducts === 0) {
+            emptyState.style.display = 'block';
+            document.querySelector('.modern-table').style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            document.querySelector('.modern-table').style.display = 'table';
+        }
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#productsTable tbody tr');
+
+        rows.forEach(row => {
+            const name = row.querySelector('.product-name').textContent.toLowerCase();
+            const description = row.querySelector('.product-description').textContent.toLowerCase();
+
+            if (name.includes(searchTerm) || description.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Sort functionality
+    document.getElementById('sortSelect').addEventListener('change', function(e) {
+        const sortBy = e.target.value;
+        const tbody = document.querySelector('#productsTable tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+        rows.sort((a, b) => {
+            let aVal, bVal;
+
+            switch(sortBy) {
+                case 'name':
+                    aVal = a.querySelector('.product-name').textContent;
+                    bVal = b.querySelector('.product-name').textContent;
+                    break;
+                case 'price':
+                    aVal = parseFloat(a.querySelector('.product-price span').textContent);
+                    bVal = parseFloat(b.querySelector('.product-price span').textContent);
+                    break;
+                case 'description':
+                    aVal = a.querySelector('.product-description').textContent;
+                    bVal = b.querySelector('.product-description').textContent;
+                    break;
+            }
+
+            if (sortBy === 'price') {
+                return aVal - bVal;
+            } else {
+                return aVal.localeCompare(bVal);
+            }
+        });
+
+        rows.forEach(row => tbody.appendChild(row));
+    });
+
+    // Form submission with notification
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        // This would normally be handled by Thymeleaf/Spring Boot
+        // Adding visual feedback for demo purposes
+        setTimeout(() => {
+            showNotification('Product added successfully!');
+            this.reset();
+        }, 100);
+    });
+
+    // Edit product function
+    function editProduct(button) {
+        const row = button.closest('tr');
+        const name = row.querySelector('.product-name').textContent;
+        const description = row.querySelector('.product-description').textContent;
+        const price = row.querySelector('.product-price span').textContent;
+
+        // Populate form with existing data
+        document.getElementById('name').value = name;
+        document.getElementById('description').value = description;
+        document.getElementById('price').value = price;
+
+        // Scroll to form
+        scrollToForm();
+
+        showNotification('Product loaded for editing');
+    }
+
+    // Delete product function
+    function deleteProduct(button) {
+        if (confirm('Are you sure you want to delete this product?')) {
+            const row = button.closest('tr');
+            row.remove();
+            updateStats();
+            showNotification('Product deleted successfully');
+        }
+    }
+
+    // Show notification
+    function showNotification(message) {
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+
+        notificationText.textContent = message;
+        notification.classList.add('show');
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    }
+
+    // Scroll to form
+    function scrollToForm() {
+        document.querySelector('.form-card').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+
+    // Initialize stats on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStats();
+    });
+</script>
+</body>
+</html>
